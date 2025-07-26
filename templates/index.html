@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AIチャットボット for Restaurant</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="chat-container">
+        <h1>レストランAIチャット</h1>
+        <div id="chat-box" class="chat-box">
+            <div class="message ai-message">こんにちは！何かご質問はありますか？（例: 営業時間は？）</div>
+        </div>
+        <div class="input-area">
+            <input type="text" id="user-input" placeholder="質問を入力してください...">
+            <button id="send-button">送信</button>
+        </div>
+    </div>
+    <script>
+        const chatBox = document.getElementById('chat-box');
+        const userInput = document.getElementById('user-input');
+        const sendButton = document.getElementById('send-button');
+
+        function addMessage(text, sender) {
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('message', `${sender}-message`);
+            messageElement.textContent = text;
+            chatBox.appendChild(messageElement);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        async function askAI() {
+            const question = userInput.value.trim();
+            if (!question) return;
+
+            addMessage(question, 'user');
+            userInput.value = '';
+
+            const thinkingMessage = document.createElement('div');
+            thinkingMessage.classList.add('message', 'ai-message');
+            thinkingMessage.textContent = '考え中...';
+            chatBox.appendChild(thinkingMessage);
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            try {
+                const response = await fetch('/ask', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ question: question }),
+                });
+
+                if (!response.ok) throw new Error('サーバーエラー');
+                const data = await response.json();
+                thinkingMessage.textContent = data.answer;
+
+            } catch (error) {
+                thinkingMessage.textContent = 'エラーが発生しました。';
+            }
+        }
+
+        sendButton.addEventListener('click', askAI);
+        userInput.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') askAI();
+        });
+    </script>
+</body>
+</html>
