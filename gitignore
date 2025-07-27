@@ -1,3 +1,6 @@
 __pycache__/
 .DS_Store
 *.pyc
+
+echo "db.sqlite3-shm" >> .gitignore
+echo "db.sqlite3-wal" >> .gitignore
